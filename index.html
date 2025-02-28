@@ -69,6 +69,7 @@
     </div>
     <div id="game-board" class="blurred"></div>
     <div id="message"></div>
+    <audio id="bgm" src="bgm.mp3" loop></audio> <!-- 音楽ファイル -->
 
     <script>
         const boardSize = 5;
@@ -80,6 +81,7 @@
         let emptyRow = boardSize - 1;
         let emptyCol = boardSize - 1;
         const gameBoard = document.getElementById('game-board');
+        const bgm = document.getElementById('bgm'); // 音楽要素を取得
 
         // ゲームボードの初期化
         function initBoard() {
@@ -173,6 +175,7 @@
             clearInterval(timerId);
             isGameOver = true;
             document.getElementById('message').textContent = message;
+            bgm.pause(); // 音楽を停止
         }
 
         // スタートボタンの処理
@@ -186,6 +189,9 @@
             document.getElementById('move-count').textContent = '動かした回数: 0';
             document.getElementById('timer').textContent = '経過時間: 0秒';
             document.getElementById('message').textContent = '';
+            bgm.play().catch(error => {
+                console.error('音楽再生エラー:', error);
+            }); // 音楽を再生、エラー処理を追加
             timerId = setInterval(() => {
                 elapsedTime++;
                 document.getElementById('timer').textContent = `経過時間: ${elapsedTime}秒`;
@@ -208,6 +214,8 @@
             document.getElementById('move-count').textContent = '動かした回数: 0';
             document.getElementById('timer').textContent = '経過時間: 0秒';
             document.getElementById('message').textContent = '';
+            bgm.pause(); // 音楽を停止
+            bgm.currentTime = 0; // 音楽をリセット
         });
 
         // 初回読み込み時にボードを初期化
