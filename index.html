@@ -69,7 +69,7 @@
     </div>
     <div id="game-board" class="blurred"></div>
     <div id="message"></div>
-    <audio id="bgm" src="bgm.mp3" loop></audio> <!-- 音楽ファイル -->
+    <audio id="bgm" src="bgm.mp3" loop></audio>
 
     <script>
         const boardSize = 5;
@@ -81,7 +81,7 @@
         let emptyRow = boardSize - 1;
         let emptyCol = boardSize - 1;
         const gameBoard = document.getElementById('game-board');
-        const bgm = document.getElementById('bgm'); // 音楽要素を取得
+        const bgm = document.getElementById('bgm');
 
         // ゲームボードの初期化
         function initBoard() {
@@ -105,7 +105,7 @@
                     gameBoard.appendChild(piece);
                 }
             }
-            gameBoard.classList.add('blurred'); // 初期状態でぼかし
+            gameBoard.classList.add('blurred');
         }
 
         // ピースをタップしたときの処理
@@ -175,14 +175,14 @@
             clearInterval(timerId);
             isGameOver = true;
             document.getElementById('message').textContent = message;
-            bgm.pause(); // 音楽を停止
+            bgm.pause();
         }
 
         // スタートボタンの処理
         document.getElementById('start-button').addEventListener('click', () => {
-            if (timerId) clearInterval(timerId); // 既存のタイマーをクリア
-            gameBoard.classList.remove('blurred'); // ぼかしを解除
-            shuffle(); // ピースをシャッフル
+            if (timerId) clearInterval(timerId);
+            gameBoard.classList.remove('blurred');
+            shuffle();
             moveCount = 0;
             elapsedTime = 0;
             isGameOver = false;
@@ -191,11 +191,11 @@
             document.getElementById('message').textContent = '';
             bgm.play().catch(error => {
                 console.error('音楽再生エラー:', error);
-            }); // 音楽を再生、エラー処理を追加
+            });
             timerId = setInterval(() => {
                 elapsedTime++;
                 document.getElementById('timer').textContent = `経過時間: ${elapsedTime}秒`;
-                if (elapsedTime >= 60) {
+                if (elapsedTime >= 1200) {  // 20分（1200秒）に変更
                     endGame('ゲームオーバー');
                 }
             }, 1000);
@@ -204,8 +204,8 @@
         // リセットボタンの処理
         document.getElementById('reset-button').addEventListener('click', () => {
             if (timerId) clearInterval(timerId);
-            initBoard(); // ボードを初期化
-            gameBoard.classList.add('blurred'); // ぼかしを再適用
+            initBoard();
+            gameBoard.classList.add('blurred');
             moveCount = 0;
             elapsedTime = 0;
             isGameOver = false;
@@ -214,8 +214,8 @@
             document.getElementById('move-count').textContent = '動かした回数: 0';
             document.getElementById('timer').textContent = '経過時間: 0秒';
             document.getElementById('message').textContent = '';
-            bgm.pause(); // 音楽を停止
-            bgm.currentTime = 0; // 音楽をリセット
+            bgm.pause();
+            bgm.currentTime = 0;
         });
 
         // 初回読み込み時にボードを初期化
