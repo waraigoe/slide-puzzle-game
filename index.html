@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>5×5 スライドパズル</title>
+    <title>スライドパズル</title>
     <style>
         #game-board {
             position: relative;
@@ -16,9 +16,9 @@
             position: absolute;
             width: 100px;
             height: 100px;
-            background-image: url('gazou1.jpg');
+            background-image: url('gazou1.jpg'); /* 完成系の画像 */
             background-size: 500px 500px;
-            transition: top 0.3s ease, left 0.3s ease;
+            transition: all 0.3s ease;
             cursor: pointer;
         }
         .empty {
@@ -26,177 +26,48 @@
         }
         #controls {
             text-align: center;
-            margin: 10px;
         }
-        #message {
-            text-align: center;
-            font-size: 24px;
-            color: red;
+        .blurred {
+            filter: blur(5px); /* ぼかし効果 */
         }
     </style>
 </head>
 <body>
     <div id="controls">
         <button id="start-button">スタート</button>
-        <button id="reset-button">リセット</button>
-        <div id="move-count">動かした回数: 0</div>
-        <div id="timer">経過時間: 0秒</div>
     </div>
-    <div id="game-board"></div>
-    <div id="message"></div>
-    <button id="restart-button" style="display: none;">もう一回やるごじゃ！</button>
-    <audio id="bgm" src="bgm.mp3" loop></audio>
+    <div id="game-board" class="blurred"></div> <!-- 初期状態でぼかし -->
 
     <script>
         const boardSize = 5;
         const pieceSize = 100;
-        let moveCount = 0;
-        let elapsedTime = 0;
-        let timerId = null;
-        let isGameOver = false;
-        let emptyRow = boardSize - 1;
-        let emptyCol = boardSize - 1;
-        const bgm = document.getElementById('bgm');
-        const restartButton = document.getElementById('restart-button');
+        const gameBoard = document.getElementById('game-board');
 
         // ゲームボードの初期化
         function initBoard() {
-            const gameBoard = document.getElementById('game-board');
             gameBoard.innerHTML = '';
             for (let row = 0; row < boardSize; row++) {
                 for (let col = 0; col < boardSize; col++) {
                     const piece = document.createElement('div');
                     if (row === boardSize - 1 && col === boardSize - 1) {
                         piece.classList.add('piece', 'empty');
-                        piece.id = 'empty';
                     } else {
                         piece.classList.add('piece');
-                        piece.id = `piece-${row}-${col}`;
                         piece.style.backgroundPosition = `-${col * pieceSize}px -${row * pieceSize}px`;
-                        piece.addEventListener('click', onPieceTap);
                     }
                     piece.style.top = `${row * pieceSize}px`;
                     piece.style.left = `${col * pieceSize}px`;
-                    piece.dataset.row = row;
-                    piece.dataset.col = col;
                     gameBoard.appendChild(piece);
                 }
             }
-        }
-
-        // ピースをタップしたときの処理
-        function onPieceTap(event) {
-            if (isGameOver) return;
-            const piece = event.target;
-            const row = parseInt(piece.dataset.row);
-            const col = parseInt(piece.dataset.col);
-            if (canMove(row, col)) {
-                movePiece(piece, row, col);
-                moveCount++;
-                document.getElementById('move-count').textContent = `動かした回数: ${moveCount}`;
-                if (isSolved()) {
-                    endGame('クリア！');
-                }
-            }
-        }
-
-        // ピースが動かせるか判定
-        function canMove(row, col) {
-            return (Math.abs(row - emptyRow) === 1 && col === emptyCol) ||
-                   (Math.abs(col - emptyCol) === 1 && row === emptyRow);
-        }
-
-        // ピースを移動
-        function movePiece(piece, row, col) {
-            const emptyPiece = document.getElementById('empty');
-            emptyPiece.style.top = `${row * pieceSize}px`;
-            emptyPiece.style.left = `${col * pieceSize}px`;
-            piece.style.top = `${emptyRow * pieceSize}px`;
-            piece.style.left = `${emptyCol * pieceSize}px`;
-            piece.dataset.row = emptyRow;
-            piece.dataset.col = emptyCol;
-            emptyRow = row;
-            emptyCol = col;
-        }
-
-        // パズルが完成したかチェック
-        function isSolved() {
-            for (let row = 0; row < boardSize; row++) {
-                for (let col = 0; col < boardSize; col++) {
-                    const piece = document.querySelector(`[data-row="${row}"][data-col="${col}"]`);
-                    if (piece && piece.id !== `piece-${row}-${col}` && piece.id !== 'empty') {
-                        return false;
-                    }
-                }
-            }
-            return true;
-        }
-
-        // ピースをシャッフル
-        function shuffle() {
-            for (let i = 0; i < 100; i++) {
-                const neighbors = [];
-                if (emptyRow > 0) neighbors.push({ row: emptyRow - 1, col: emptyCol });
-                if (emptyRow < boardSize - 1) neighbors.push({ row: emptyRow + 1, col: emptyCol });
-                if (emptyCol > 0) neighbors.push({ row: emptyRow, col: emptyCol - 1 });
-                if (emptyCol < boardSize - 1) neighbors.push({ row: emptyRow, col: emptyCol + 1 });
-                const { row, col } = neighbors[Math.floor(Math.random() * neighbors.length)];
-                const piece = document.querySelector(`[data-row="${row}"][data-col="${col}"]`);
-                movePiece(piece, row, col);
-            }
-        }
-
-        // ゲーム終了処理
-        function endGame(message) {
-            clearInterval(timerId);
-            isGameOver = true;
-            document.getElementById('message').textContent = message;
-            restartButton.style.display = 'block'; // リスタートボタンを表示
-            bgm.pause(); // 音楽を停止
+            gameBoard.classList.add('blurred'); // 初期状態でぼかし
         }
 
         // スタートボタンの処理
         document.getElementById('start-button').addEventListener('click', () => {
-            if (timerId) clearInterval(timerId);
-            initBoard();
-            shuffle();
-            moveCount = 0;
-            elapsedTime = 0;
-            isGameOver = false;
-            document.getElementById('move-count').textContent = '動かした回数: 0';
-            document.getElementById('timer').textContent = '経過時間: 0秒';
-            document.getElementById('message').textContent = '';
-            restartButton.style.display = 'none'; // リスタートボタンを非表示
-            bgm.play(); // 音楽を再生
-            timerId = setInterval(() => {
-                elapsedTime++;
-                document.getElementById('timer').textContent = `経過時間: ${elapsedTime}秒`;
-                if (elapsedTime >= 60) {
-                    endGame('ゲームオーバー');
-                }
-            }, 1000);
-        });
-
-        // リセットボタンの処理
-        document.getElementById('reset-button').addEventListener('click', () => {
-            if (timerId) clearInterval(timerId);
-            initBoard();
-            moveCount = 0;
-            elapsedTime = 0;
-            isGameOver = false;
-            emptyRow = boardSize - 1;
-            emptyCol = boardSize - 1;
-            document.getElementById('move-count').textContent = '動かした回数: 0';
-            document.getElementById('timer').textContent = '経過時間: 0秒';
-            document.getElementById('message').textContent = '';
-            restartButton.style.display = 'none';
-            bgm.pause();
-            bgm.currentTime = 0; // 音楽を最初から再生できるようにリセット
-        });
-
-        // リスタートボタンの処理
-        restartButton.addEventListener('click', () => {
-            document.getElementById('start-button').click(); // スタートボタンの処理を再実行
+            gameBoard.classList.remove('blurred'); // ぼかしを解除
+            // ここにゲーム開始処理を追加
+            console.log('ゲーム開始！');
         });
 
         // 初回読み込み時にボードを初期化
